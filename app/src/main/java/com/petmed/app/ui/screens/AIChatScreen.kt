@@ -23,8 +23,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Send
-import androidx.compose.material.icons.filled.CameraAlt
-import androidx.compose.material.icons.filled.KeyboardVoice
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
@@ -32,36 +31,37 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.petmed.app.data.model.ChatMessage
-import com.petmed.app.ui.theme.Blue
 import com.petmed.app.ui.theme.BrownLight
 import com.petmed.app.ui.theme.Cream
 import com.petmed.app.ui.theme.CreamDark
 import com.petmed.app.ui.theme.Green
 import com.petmed.app.ui.theme.Orange
 import com.petmed.app.ui.theme.White
+import com.petmed.app.ui.viewmodel.AIChatViewModel
 
 @Composable
-fun AIChatScreen(onBack: () -> Unit = {}) {
-    val messages = remember {
-        mutableStateListOf(
-            ChatMessage(1, "您好！我是動物飼養助手，專門提供中化動藥的寵物用藥諮詢。請問您的寵物有什麼問題嗎？", isFromUser = false),
-            ChatMessage(2, "我的狗狗皮膚一直在抓", isFromUser = true),
-            ChatMessage(3, "皮膚搔癢可能是過敏或寄生蟲引起的。建議使用中化動藥的「芬普尼滴劑」驅除體外寄生蟲，並盡快就醫確認診斷。", isFromUser = false),
-        )
-    }
-    var inputText by remember { mutableStateOf("") }
+fun AIChatScreen(
+    onBack: () -> Unit = {},
+    aiChatViewModel: AIChatViewModel = viewModel()
+) {
+    val messages = aiChatViewModel.messages
+    val isLoading by aiChatViewModel.isLoading.collectAsState()
+    var inputText by remember { mutableStateOf(TextFieldValue("")) }
     val listState = rememberLazyListState()
 
     LaunchedEffect(messages.size) {
@@ -75,7 +75,6 @@ fun AIChatScreen(onBack: () -> Unit = {}) {
             .fillMaxSize()
             .imePadding()
     ) {
-        // 頂部標題列
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -85,11 +84,7 @@ fun AIChatScreen(onBack: () -> Unit = {}) {
             verticalAlignment = Alignment.CenterVertically
         ) {
             IconButton(onClick = onBack) {
-                Icon(
-                    Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = "返回",
-                    tint = White
-                )
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "返回", tint = White)
             }
             Box(
                 modifier = Modifier
@@ -101,15 +96,9 @@ fun AIChatScreen(onBack: () -> Unit = {}) {
                 Text("AI", color = Orange, fontWeight = FontWeight.Bold, fontSize = 15.sp)
             }
             Spacer(modifier = Modifier.width(12.dp))
-            Text(
-                text = "動物飼養助手",
-                color = White,
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold
-            )
+            Text(text = "動物飼養助手", color = White, fontSize = 18.sp, fontWeight = FontWeight.Bold)
         }
 
-        // 對話訊息列表
         LazyColumn(
             state = listState,
             modifier = Modifier
@@ -123,22 +112,29 @@ fun AIChatScreen(onBack: () -> Unit = {}) {
             items(messages) { message ->
                 ChatBubble(message = message)
             }
+            if (isLoading) {
+                item {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Start
+                    ) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(24.dp),
+                            color = Orange,
+                            strokeWidth = 2.dp
+                        )
+                    }
+                }
+            }
         }
 
-        // 輸入列
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .background(White)
-                .padding(horizontal = 8.dp, vertical = 8.dp),
+                .padding(horizontal = 12.dp, vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            IconButton(onClick = {}) {
-                Icon(Icons.Default.CameraAlt, contentDescription = "相機", tint = Blue)
-            }
-            IconButton(onClick = {}) {
-                Icon(Icons.Default.KeyboardVoice, contentDescription = "語音", tint = Blue)
-            }
             OutlinedTextField(
                 value = inputText,
                 onValueChange = { inputText = it },
@@ -153,23 +149,20 @@ fun AIChatScreen(onBack: () -> Unit = {}) {
                 ),
                 singleLine = true,
                 trailingIcon = {
-                    if (inputText.isNotBlank()) {
-                        IconButton(onClick = {
-                            messages.add(
-                                ChatMessage(
-                                    id = messages.size + 1,
-                                    content = inputText.trim(),
-                                    isFromUser = true
-                                )
-                            )
-                            inputText = ""
-                        }) {
-                            Icon(
-                                Icons.AutoMirrored.Filled.Send,
-                                contentDescription = "送出",
-                                tint = Orange
-                            )
+                    val canSend = inputText.text.isNotBlank() && !isLoading
+                    IconButton(
+                        onClick = {
+                            if (canSend) {
+                                aiChatViewModel.sendMessage(inputText.text.trim())
+                                inputText = TextFieldValue("")
+                            }
                         }
+                    ) {
+                        Icon(
+                            Icons.AutoMirrored.Filled.Send,
+                            contentDescription = "送出",
+                            tint = if (canSend) Orange else Color.Transparent
+                        )
                     }
                 }
             )

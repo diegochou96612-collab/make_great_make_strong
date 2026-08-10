@@ -1,0 +1,5 @@
+com.petmed.app.test.app-updated_navigation_xml-0 D:\周子謙\中化\app_周子謙_v2\app\build\generated\updated_navigation_xml\debugAndroidTest
+com.petmed.app.test.app-packageDebugAndroidTestResources-1 D:\周子謙\中化\app_周子謙_v2\app\build\intermediates\incremental\debugAndroidTest\packageDebugAndroidTestResources\merged.dir
+com.petmed.app.test.app-packageDebugAndroidTestResources-2 D:\周子謙\中化\app_周子謙_v2\app\build\intermediates\incremental\debugAndroidTest\packageDebugAndroidTestResources\stripped.dir
+com.petmed.app.test.app-debugAndroidTest-3 D:\周子謙\中化\app_周子謙_v2\app\build\intermediates\merged_res\debugAndroidTest\mergeDebugAndroidTestResources
+gradleHome-0 C:\Users\chchou\.gradle

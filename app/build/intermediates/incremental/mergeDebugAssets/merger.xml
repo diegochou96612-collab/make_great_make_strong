@@ -1,0 +1,2 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merger version="3"><dataSet config="main" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"><source path="D:\周子謙\中化\app_周子謙_v2\app\src\main\assets"><file name="動物保健依據(全).txt" path="D:\周子謙\中化\app_周子謙_v2\app\src\main\assets\動物保健依據(全).txt"/></source></dataSet><dataSet config="debug" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"><source path="D:\周子謙\中化\app_周子謙_v2\app\src\debug\assets"/></dataSet></merger>

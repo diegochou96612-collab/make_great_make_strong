@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "445050522651",
+    "project_id": "petapp-79935",
+    "storage_bucket": "petapp-79935.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:445050522651:android:5476d664127e8db05a3cbe",
+        "android_client_info": {
+          "package_name": "com.petmed.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCRvK4Bem0b0FThfIMTXNVDLrLo61BE7qg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
