@@ -54,6 +54,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.DialogWindowProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.petmed.app.data.model.MedicationRecord
+import com.petmed.app.ui.components.WheelDatePickerDialog
 import com.petmed.app.ui.components.WheelTimePicker
 import com.petmed.app.ui.theme.Brown
 import com.petmed.app.ui.theme.BrownLight
@@ -329,8 +330,12 @@ private fun RecordDialog(
     onConfirm: (MedicationRecord) -> Unit,
     onDismiss: () -> Unit
 ) {
+    val calendar = java.util.Calendar.getInstance()
+    val existingParts = existing?.dateTime?.split(" ")
+    val existingDateParts = existingParts?.getOrNull(0)?.split("-")
+    val existingTimeParts = existingParts?.getOrNull(1)?.split(":")
+
     var name by remember { mutableStateOf(TextFieldValue(existing?.medicationName ?: "")) }
-    var dateTime by remember { mutableStateOf(TextFieldValue(existing?.dateTime ?: "")) }
     var isRepeat by remember { mutableStateOf(existing?.isRepeat ?: false) }
     var selectedDays by remember {
         mutableStateOf(
@@ -340,9 +345,17 @@ private fun RecordDialog(
                 ?.toSet() ?: emptySet()
         )
     }
-    val initTime = existing?.repeatTime?.split(":")
-    var repeatHour by remember { mutableStateOf(initTime?.getOrNull(0)?.toIntOrNull() ?: 8) }
-    var repeatMinute by remember { mutableStateOf(initTime?.getOrNull(1)?.toIntOrNull() ?: 0) }
+
+    val initRepeatTime = existing?.repeatTime?.split(":")
+    var repeatHour by remember { mutableStateOf(initRepeatTime?.getOrNull(0)?.toIntOrNull() ?: 8) }
+    var repeatMinute by remember { mutableStateOf(initRepeatTime?.getOrNull(1)?.toIntOrNull() ?: 0) }
+
+    var singleYear by remember { mutableStateOf(existingDateParts?.getOrNull(0)?.toIntOrNull() ?: calendar.get(java.util.Calendar.YEAR)) }
+    var singleMonth by remember { mutableStateOf(existingDateParts?.getOrNull(1)?.toIntOrNull() ?: (calendar.get(java.util.Calendar.MONTH) + 1)) }
+    var singleDay by remember { mutableStateOf(existingDateParts?.getOrNull(2)?.toIntOrNull() ?: calendar.get(java.util.Calendar.DAY_OF_MONTH)) }
+    var singleHour by remember { mutableStateOf(existingTimeParts?.getOrNull(0)?.toIntOrNull() ?: 8) }
+    var singleMinute by remember { mutableStateOf(existingTimeParts?.getOrNull(1)?.toIntOrNull() ?: 0) }
+    var showDatePicker by remember { mutableStateOf(false) }
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -382,12 +395,8 @@ private fun RecordDialog(
                     WheelTimePicker(
                         initialHour = repeatHour,
                         initialMinute = repeatMinute,
-                        onTimeChange = { h, m ->
-                            repeatHour = h
-                            repeatMinute = m
-                        }
+                        onTimeChange = { h, m -> repeatHour = h; repeatMinute = m }
                     )
-
                     Text("提醒日期", color = BrownLight, fontSize = 12.sp)
                     val dayLabels = listOf("日", "一", "二", "三", "四", "五", "六")
                     Row(
@@ -403,10 +412,7 @@ private fun RecordDialog(
                                     .clip(CircleShape)
                                     .background(if (isSelected) Orange else CreamDark)
                                     .clickable {
-                                        selectedDays = if (isSelected)
-                                            selectedDays - dayValue
-                                        else
-                                            selectedDays + dayValue
+                                        selectedDays = if (isSelected) selectedDays - dayValue else selectedDays + dayValue
                                     },
                                 contentAlignment = Alignment.Center
                             ) {
@@ -420,12 +426,29 @@ private fun RecordDialog(
                         }
                     }
                 } else {
-                    OutlinedTextField(
-                        value = dateTime,
-                        onValueChange = { dateTime = it },
-                        label = { Text("時間（例：2026-08-01 18:00）") },
-                        singleLine = true,
-                        modifier = Modifier.fillMaxWidth()
+                    // 日期選擇按鈕
+                    Text("日期", color = BrownLight, fontSize = 12.sp)
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(CreamDark)
+                            .clickable { showDatePicker = true }
+                            .padding(horizontal = 16.dp, vertical = 12.dp)
+                    ) {
+                        Text(
+                            text = "%d-%02d-%02d".format(singleYear, singleMonth, singleDay),
+                            color = Brown,
+                            fontSize = 15.sp,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
+                    // 時間輪盤
+                    Text("時間", color = BrownLight, fontSize = 12.sp)
+                    WheelTimePicker(
+                        initialHour = singleHour,
+                        initialMinute = singleMinute,
+                        onTimeChange = { h, m -> singleHour = h; singleMinute = m }
                     )
                 }
             }
@@ -435,11 +458,13 @@ private fun RecordDialog(
                 onClick = {
                     if (name.text.isNotBlank()) {
                         if (isRepeat && selectedDays.isEmpty()) return@TextButton
+                        val dateTimeStr = if (isRepeat) ""
+                        else "%d-%02d-%02d %02d:%02d".format(singleYear, singleMonth, singleDay, singleHour, singleMinute)
                         onConfirm(
                             MedicationRecord(
                                 id = existing?.id ?: 0,
                                 medicationName = name.text.trim(),
-                                dateTime = if (isRepeat) "" else dateTime.text.trim(),
+                                dateTime = dateTimeStr,
                                 isCompleted = existing?.isCompleted ?: false,
                                 isRepeat = isRepeat,
                                 repeatDays = if (isRepeat) selectedDays.sorted().joinToString(",") else "",
@@ -455,4 +480,17 @@ private fun RecordDialog(
             TextButton(onClick = onDismiss) { Text("取消", color = BrownLight) }
         }
     )
+
+    if (showDatePicker) {
+        WheelDatePickerDialog(
+            initialYear = singleYear,
+            initialMonth = singleMonth,
+            initialDay = singleDay,
+            onConfirm = { y, m, d ->
+                singleYear = y; singleMonth = m; singleDay = d
+                showDatePicker = false
+            },
+            onDismiss = { showDatePicker = false }
+        )
+    }
 }

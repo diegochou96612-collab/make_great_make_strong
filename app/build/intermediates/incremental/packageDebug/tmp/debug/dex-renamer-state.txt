@@ -1,4 +1,4 @@
-#Mon Aug 10 15:43:16 CST 2026
+#Mon Aug 10 16:57:23 CST 2026
 base.0=D\:\\周子謙\\中化\\app_周子謙_v2\\app\\build\\intermediates\\dex\\debug\\mergeExtDexDebug\\classes.dex
 base.1=D\:\\周子謙\\中化\\app_周子謙_v2\\app\\build\\intermediates\\dex\\debug\\mergeProjectDexDebug\\0\\classes.dex
 base.10=D\:\\周子謙\\中化\\app_周子謙_v2\\app\\build\\intermediates\\global_synthetics_dex\\debug\\generateDebugGlobalSynthetics\\classes.dex
