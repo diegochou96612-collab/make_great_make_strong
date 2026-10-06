@@ -1,0 +1,23 @@
+# Gradle / Android Studio
+.gradle/
+.idea/
+.kotlin/
+build/
+*.iml
+captures/
+.cxx/
+.externalNativeBuild/
+
+# 本機設定與金鑰（不可上傳）
+local.properties
+app/google-services.json
+*.jks
+*.keystore
+
+# 安裝檔（太大，不放進程式碼倉庫）
+*.apk
+*.aab
+
+# 系統檔
+.DS_Store
+Thumbs.db
