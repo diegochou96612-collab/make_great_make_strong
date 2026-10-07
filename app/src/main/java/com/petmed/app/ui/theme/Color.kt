@@ -12,3 +12,7 @@ val CreamDark = Color(0xFFEDE4DA)
 val Brown = Color(0xFF3D2B1F)
 val BrownLight = Color(0xFF8B7355)
 val White = Color(0xFFFFFFFF)
+
+
+val Purple = Color(0xFFB3A3D4)
+val Pink = Color(0xFFEBA49B)

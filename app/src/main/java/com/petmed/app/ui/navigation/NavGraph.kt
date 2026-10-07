@@ -1,22 +1,41 @@
 package com.petmed.app.ui.navigation
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.LocalHospital
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.SmartToy
 import androidx.compose.material3.Icon
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -33,6 +52,8 @@ import com.petmed.app.ui.theme.White
 sealed class Screen(val route: String) {
     object Home : Screen("home")
     object Hospital : Screen("hospital")
+
+    object Assistant : Screen( "assistant")
     object MedRecord : Screen("med_record")
     object Profile : Screen("profile")
     object AIChat : Screen("ai_chat")
@@ -47,6 +68,7 @@ data class BottomNavItem(
 private val bottomNavItems = listOf(
     BottomNavItem(Screen.Home.route, "首頁", Icons.Default.Home),
     BottomNavItem(Screen.Hospital.route, "醫院", Icons.Default.LocalHospital),
+    BottomNavItem(Screen.AIChat.route, "AI 助理", Icons.Default.SmartToy),
     BottomNavItem(Screen.MedRecord.route, "提醒", Icons.Default.Notifications),
     BottomNavItem(Screen.Profile.route, "個人", Icons.Default.Person),
 )
@@ -63,31 +85,22 @@ fun AppNavGraph() {
     Scaffold(
         bottomBar = {
             if (showBottomBar) {
-                NavigationBar(containerColor = White) {
-                    bottomNavItems.forEach { item ->
-                        NavigationBarItem(
-                            icon = { Icon(item.icon, contentDescription = item.label) },
-                            label = { Text(item.label) },
-                            selected = currentRoute == item.route,
-                            onClick = {
-                                navController.navigate(item.route) {
-                                    popUpTo(navController.graph.findStartDestination().id) {
-                                        saveState = true
-                                    }
-                                    launchSingleTop = true
-                                    restoreState = true
+                PetBottomBar(
+                    currentRoute = currentRoute,
+                    onNavigate = { route ->
+                        if (route == Screen.AIChat.route) {
+                            navController.navigate(route)
+                        } else {
+                            navController.navigate(route) {
+                                popUpTo(navController.graph.findStartDestination().id) {
+                                    saveState = true
                                 }
-                            },
-                            colors = NavigationBarItemDefaults.colors(
-                                selectedIconColor = Orange,
-                                selectedTextColor = Orange,
-                                indicatorColor = Orange.copy(alpha = 0.15f),
-                                unselectedIconColor = Color.Gray,
-                                unselectedTextColor = Color.Gray
-                            )
-                        )
+                                launchSingleTop = true
+                                restoreState = true
+                            }
+                        }
                     }
-                }
+                )
             }
         }
     ) { paddingValues ->
@@ -126,6 +139,92 @@ fun AppNavGraph() {
             }
             composable(Screen.AIChat.route) {
                 AIChatScreen(onBack = { navController.popBackStack() })
+            }
+        }
+    }
+}
+
+@Composable
+private fun PetBottomBar(
+    currentRoute: String?,
+    onNavigate: (String) -> Unit
+) {
+    Box(modifier = Modifier.fillMaxWidth()) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(White)
+                .navigationBarsPadding()
+                .height(72.dp),
+            horizontalArrangement = Arrangement.SpaceAround,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            bottomNavItems.forEach { item ->
+                val selected = currentRoute == item.route
+                val isCenter = item.route == Screen.AIChat.route
+                val tint = if (selected || isCenter) Orange else Color.Gray
+
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .clickable(
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = null
+                        ) { onNavigate(item.route) },
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    if (isCenter) {
+                        // 中間的 AI 按鈕：凸起的橘色圓形
+                        Box(
+                            modifier = Modifier
+                                .offset(y = (-22).dp)
+                                .size(68.dp)
+                                .clip(CircleShape)
+                                .background(Orange.copy(alpha = 0.15f)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(54.dp)
+                                    .shadow(6.dp, CircleShape)
+                                    .clip(CircleShape)
+                                    .background(Orange),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    item.icon,
+                                    contentDescription = item.label,
+                                    tint = White,
+                                    modifier = Modifier.size(30.dp)
+                                )
+                            }
+                        }
+                        Text(
+                            text = item.label,
+                            color = tint,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.offset(y = (-18).dp)
+                        )
+                    } else {
+                        Box(
+                            modifier = Modifier
+                                .size(40.dp)
+                                .clip(CircleShape)
+                                .background(if (selected) Orange.copy(alpha = 0.15f) else Color.Transparent),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(item.icon, contentDescription = item.label, tint = tint)
+                        }
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Text(
+                            text = item.label,
+                            color = tint,
+                            fontSize = 12.sp,
+                            fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal
+                        )
+                    }
+                }
             }
         }
     }
