@@ -84,6 +84,17 @@ app/src/main/java/com/petmed/app/
 
 ## 開啟與建置
 
+### 從 GitHub 下載後，要先補兩個檔案
+
+這兩個檔案含有金鑰與專案設定，**沒有放在倉庫裡**，缺了就無法建置：
+
+| 檔案 | 位置 | 怎麼取得 |
+|------|------|----------|
+| `google-services.json` | `app/google-services.json` | 向專案成員索取，或用自己的 Firebase 專案下載 |
+| `local.properties` | 專案根目錄 | Android Studio 開啟專案時會自動產生 `sdk.dir`；AI 金鑰（`GROQ_API_KEY=...`）可不填，改在 App 內設定 |
+
+### 建置步驟
+
 1. 使用 **Android Studio** 開啟本資料夾，等待 Gradle sync。
 2. 連接手機或模擬器，按 **Run**。
 3. 要產生 APK：**Build → Build APK(s)**，輸出在 `app/build/outputs/apk/debug/app-debug.apk`。

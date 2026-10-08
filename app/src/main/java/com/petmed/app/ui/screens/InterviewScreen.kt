@@ -62,6 +62,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -176,6 +177,13 @@ fun InterviewScreen(
                 IconButton(onClick = { scope.launch { drawerState.open() } }) {
                     Icon(Icons.Default.Menu, contentDescription = "狀況紀錄", tint = White)
                 }
+                Box(
+                    modifier = Modifier.size(40.dp).clip(CircleShape).background(White),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text("AI", color = Orange, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                }
+                Spacer(Modifier.width(10.dp))
                 Column(Modifier.weight(1f)) {
                     Text(if (ui.chatMode) "補充與修改" else "AI 記錄助理", color = White, fontSize = 17.sp, fontWeight = FontWeight.Bold)
                     if (ui.total > 0 && !ui.finished) {
